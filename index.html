@@ -4,22 +4,23 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="theme-color" content="#111a31" />
-  <title>Slimefall — First Contact</title>
+  <title>Slimefall — First Contact v0.2</title>
   <link rel="stylesheet" href="src/style.css" />
 </head>
 <body>
   <main id="shell">
     <div id="game" aria-label="Slimefall game"></div>
-    <div id="banner" role="status">FIRST CONTACT <span>•</span> KING SLIME</div>
+    <div id="banner" role="status">SLIMEFALL <span>•</span> FIRST CONTACT</div>
     <div id="top-actions"><button id="sound" aria-label="Toggle sound">♫</button><button id="pause" aria-label="Pause or resume">Ⅱ</button></div>
     <div id="mobile-controls" aria-label="Touchscreen game controls">
       <div class="left-controls"><button id="move-left" class="control move" aria-label="Move left">◀</button><button id="move-right" class="control move" aria-label="Move right">▶</button></div>
       <div class="right-controls"><button id="switch" class="control alt" aria-label="Switch attack mode">⇄</button><button id="jump" class="control jump" aria-label="Jump">↑</button><button id="attack" class="control attack" aria-label="Attack">✦</button></div>
     </div>
     <div id="rotate">↻<span>Turn your phone sideways for the best view.</span></div>
-    <p id="instructions">A / D move · SPACE jump · J attack · K switch weapon · P pause</p>
+    <p id="instructions">A / D move · SPACE jump · HOLD J attack · K swap · P pause</p>
   </main>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.86.0/phaser.min.js"></script>
+  <script>if(!window.Phaser){document.getElementById("game").textContent="The game engine could not load. Check your connection and reload.";}</script>
   <script src="src/game.js"></script>
 </body>
 </html>
