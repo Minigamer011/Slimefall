@@ -1,33 +1,29 @@
-# Slimefall — First Contact (prototype v0.1)
+# Slimefall — First Contact v0.2
 
-Original Terraria-inspired boss-rush platformer vertical slice. Made with **Phaser 3.86**.
+Slimefall is an original, free, mobile-first Phaser 3 boss fight. This is a playable game, not a static mockup. All art is generated in-engine with original shapes; no Terraria assets are copied. No paid builder, npm installation, game server, or Replit credits required.
 
-## Phone-first play
+## Play
 
-After publishing to GitHub Pages, open the site in Safari or Chrome and rotate the phone to landscape. Touch left/right to move, up to jump, star to attack, and arrows to switch between melee and magic. The pause icon is in the top-right. To play on a computer, use A/D or arrow keys, Space to jump, J to attack, K to switch weapons and P to pause.
+GitHub Pages: https://minigamer011.github.io/Slimefall/
 
-## Hosting for $0 with GitHub Pages
+- iPhone/Android: open in Safari/Chrome. Landscape gives the best view; portrait remains playable for testing. Touch left/right to move; up to jump; hold the star to attack; ⇄ changes weapon. Top-right buttons pause or mute.
+- Keyboard: A/D or Left/Right to move; Space/Up/W to jump; hold J to attack; K changes weapons; P or Escape pauses; Enter starts or resumes.
 
-1. Create a **public** repository called `Slimefall` in GitHub. GitHub Free requires a public repo for free Pages hosting.
-2. Upload the **contents** of this folder (`index.html` and `src`) to its default branch, or have ChatGPT commit them with its GitHub connector.
-3. Open repository **Settings → Pages**, select **Deploy from a branch**, branch **main**, folder **/(root)**, then Save.
-4. GitHub will show your public game's URL on the Pages screen once its first deployment succeeds.
+## v0.2 changes
 
-No npm, Replit, paid developer agents, backend, or running PC is needed. The page pulls Phaser from the public cdnjs CDN, so internet access is required. For offline play, replace the CDN link with a self-hosted Phaser file.
+- Compact, always-visible boss arena (no empty walk to the fight)
+- Original, improved procedural pixel character and enemy art with run frames
+- Decorative night sky, layered mountains, ruins, glints, and ground detail
+- Improved coyote time, buffered/variable jumps, acceleration and knockback
+- A close-range sword and longer-range auto-aim star staff, damage numbers and effects
+- Crowned Ooze boss cycles readable jump, ground rush and falling slime patterns
+- Health hearts, boss meter, invulnerability feedback, restart/pause and victory recap
+- More practical phone buttons; portrait no longer hides the game
 
-## What's implemented
-- Actual arcade physics and platform collisions
-- Coyote-time and buffered jumping; variable-height jump
-- One slime boss with telegraphed jump, impact, twin shockwaves, health and retry loop
-- Melee strike and ranged bolts
-- Player health, invulnerability frames, hit effects, screen shake, pause/retry
-- Landscape touch buttons and desktop keyboard controls
-- Original procedural placeholder pixel art; no Terraria assets
+## Hosting
 
-## Known limitations / next milestones
-- Source has passed JavaScript syntax validation, but device/browser gameplay has not yet been verified here.
-- Initial scenery and boss art are placeholder quality, not finished sprites.
-- No music; small optional synthesized effects only.
-- Improve mobile responsiveness, art, attack collisions and boss balance from playtest feedback before adding additional bosses.
+This is a static project. Configure repository **Settings → Pages → Deploy from a branch → main → /(root)**. The HTML loads Phaser from cdnjs (a network connection is needed). Main sources are `index.html`, `src/style.css`, and `src/game.js`.
 
-All game content here is original placeholder work and is not affiliated with Terraria or Re-Logic.
+## Verification and limits
+
+The JavaScript passes `node --check`. No verified gameplay/browser playtest has been completed in the authoring environment, so phone feedback is still needed to catch device-specific bugs. The gameplay is a limited vertical slice, not the finished multi-boss game. Art is procedural placeholder-quality, and there is no soundtrack. Improve this one fight with direct player testing before growing scope.
