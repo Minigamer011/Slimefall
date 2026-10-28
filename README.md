@@ -15,3 +15,7 @@ Static site: commit index.html, src/ and assets/ to the root of the `main` branc
 ## Limits
 
 These are intentionally original sprites inspired by 2D pixel-art games, not extracted or copied from Terraria. The generated assets have been visually previewed as assembled art; full touchscreen Safari QA still requires device testing. If assets fail to load, the old procedural fallback sprites remain for characters, and the old scenery still displays.
+
+
+## v0.6 scale correction
+World art now uses a fine 2× pixel grid (8 logical / 16 rendered terrain tile size), slimmer forest trees, terrain detail, a smaller player silhouette, and compact hotbar / life / boss HUD, while preserving v0.5 combat. All sprite and landscape PNGs are independently authored for Slimefall; no Terraria assets are redistributed.

@@ -57,3 +57,13 @@ button{font-family:inherit;cursor:pointer;touch-action:none;-webkit-appearance:n
 .dash{background:#458876c7}
 #rotate{border-radius:2px}
 @media (pointer:coarse) and (max-height:430px){.control{opacity:.87}}
+
+/* v0.6: visual-scale pass. Keep touch targets large, make their treatment unobtrusive. */
+#banner{display:none}
+#top-actions{top:calc(68px + env(safe-area-inset-top))}
+#top-actions button{min-width:33px;height:31px;background:#34475d9a;border:1px solid #c8d0e4a4;border-radius:2px;font-size:16px;box-shadow:0 2px 0 #1724377a}
+.control{border:2px solid #c2c6ce98;border-radius:6px;background:#26394f8a;color:#eff8f6;box-shadow:0 3px 0 #1924338c,inset 0 1px #ffffff33;text-shadow:0 2px #182333b0}
+.attack{background:#6d4c65a3;border-color:#f3bdc5a0}
+.jump{background:#355e76a3}
+.alt,.dash{background:#5261549c}
+.control:active,.control.pressed{background:#648a6dd6;border-color:#f8e8aa}

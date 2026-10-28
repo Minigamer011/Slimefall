@@ -1,4 +1,4 @@
-/* Slimefall: Forest Art Pass v0.5 — an original mobile-first pixel-art boss encounter.
+/* Slimefall: World-Scale Art Pass v0.6 — an original mobile-first pixel-art boss encounter.
    Hand-coded art and mechanics informed by genre research; no Terraria assets used.
    Runs as a static Phaser 3 site. */
 (() => {
@@ -177,8 +177,8 @@
       makeArt(this);this.backdrop();this.land();this.actors();this.interface();
       this.keys=this.input.keyboard.addKeys('A,D,LEFT,RIGHT,SPACE,UP,W,J,K,P,ESC,ENTER,SHIFT');
       this.input.keyboard.addCapture(['SPACE','UP','LEFT','RIGHT','SHIFT']);
-      this.overlay('SLIMEFALL','THE EMERALD FOREST  •  v0.5','A handcrafted pixel forest. One royal slime. One chance to claim the crown.','BEGIN BATTLE');
-      window.slimefall={version:'0.5.0',game:this.game,play:()=>this.closeOverlay(),state:()=>({playing:this.playing,hp:this.hp,bossHP:this.bossHP,bossState:this.bossState,weapon:this.mode,minis:this.minis.length,time:Math.floor(this.seconds)}),reset:()=>this.scene.restart()};
+      this.overlay('SLIMEFALL','FOREST BOSS RUSH  •  v0.6','A small adventurer. A very large slime.','PLAY');
+      window.slimefall={version:'0.6.0',game:this.game,play:()=>this.closeOverlay(),state:()=>({playing:this.playing,hp:this.hp,bossHP:this.bossHP,bossState:this.bossState,weapon:this.mode,minis:this.minis.length,time:Math.floor(this.seconds)}),reset:()=>this.scene.restart()};
     }
     backdrop(){
       const rng=rand(39071),sky=this.add.graphics().setDepth(-60);
@@ -207,7 +207,7 @@
         const fleck=this.add.rectangle(rng()*W,235+rng()*206,i%3?3:4,3,i%4?0xffe79a:0xe0fbcb,.35+rng()*.3).setDepth(-12);
         this.tweens.add({targets:fleck,y:fleck.y-28-rng()*16,alpha:.04,duration:1600+rng()*2800,yoyo:true,repeat:-1,delay:rng()*2100});
       }
-      // v0.5 artwork covers earlier geometric placeholders with authored 2px pixels.
+      // v0.6 grid-aligned art replaces old oversized geometric scenery with authored 2px pixels.
       // Placed above primitive scenery but behind motes, platforms and characters.
       if(this.textures.exists('forest-background'))
         this.add.image(0,0,'forest-background').setOrigin(0,0).setDepth(-20);
@@ -269,33 +269,54 @@
       this.player.setFlipX(false);
     }
     interface(){
+      // A compact game HUD, not oversized dashboard cards. Gameplay stays unchanged.
       const ui=this.add.graphics().setDepth(90);
-      rect(ui,0x173c49,16,14,212,66,.85);rect(ui,0x173c49,291,14,379,70,.86);
-      rect(ui,0x90cfca,16,14,212,3);rect(ui,0xd6c28c,291,14,379,3);
-      this.add.text(27,22,'ADVENTURER',{fontFamily:'monospace',fontSize:'13px',fontStyle:'bold',color:'#e9f5ec',letterSpacing:1}).setDepth(92);
-      this.add.text(307,21,'THE VERDANT CROWN',{fontFamily:'monospace',fontSize:'15px',fontStyle:'bold',color:'#fff1bc'}).setDepth(92);
-      this.hearts=this.add.text(27,45,'', {fontFamily:'monospace',fontSize:'22px',color:'#ff7788'}).setDepth(92);
-      this.bossBar=this.add.graphics().setDepth(92);
-      this.weaponName=this.add.text(24,88,'', {fontFamily:'monospace',fontSize:'14px',fontStyle:'bold',color:'#ffffff',stroke:'#1e374c',strokeThickness:3}).setDepth(92);
-      this.timeText=this.add.text(932,22,'00:00',{fontFamily:'monospace',fontSize:'15px',color:'#28546e',stroke:'#c4e6e4',strokeThickness:2}).setDepth(92).setOrigin(1,0);
-      this.telegraphText=this.add.text(480,111,'',{fontFamily:'monospace',fontSize:'17px',fontStyle:'bold',color:'#fff6bc',stroke:'#254b5b',strokeThickness:5}).setOrigin(.5).setDepth(96);
+      // 5 small, translucent hotbar slots in the upper left, pixel borders.
+      for(let i=0;i<5;i++){
+        const x=13+i*40, y=12;
+        rect(ui,0x202b40,x,y,36,36,.72);
+        rect(ui,0x9a9b9f,x,y,36,2,.80);rect(ui,0x757b8d,x,y+34,36,2,.80);
+        rect(ui,0xa7aabb,x,y,2,36,.80);rect(ui,0x343c50,x+34,y,2,36,.80);
+        if(i===0){rect(ui,0xbdd4db,x+15,y+5,4,17);rect(ui,0x6f9aaa,x+16,y+5,2,11);rect(ui,0xb17a4c,x+11,y+20,11,3);rect(ui,0x7a573d,x+16,y+23,2,6);}
+        if(i===1){rect(ui,0xaa91f5,x+16,y+7,5,9);rect(ui,0xf4e4ff,x+17,y+5,2,4);rect(ui,0x73549c,x+17,y+16,3,13);}
+        if(i>=2){rect(ui,0x666c78,x+11,y+13,12,10,.3);}
+      }
+      this.slotOutline=this.add.graphics().setDepth(94);
+      this.weaponName=this.add.text(14,54,'',{fontFamily:'monospace',fontSize:'12px',fontStyle:'bold',color:'#f7f3df',stroke:'#3e3840',strokeThickness:3}).setDepth(92);
+      this.add.text(751,13,'Life',{fontFamily:'monospace',fontSize:'14px',fontStyle:'bold',color:'#fff5dd',stroke:'#4f405a',strokeThickness:3}).setDepth(92);
+      this.hearts=this.add.text(793,9,'',{fontFamily:'monospace',fontSize:'23px',color:'#ff425c',stroke:'#542e3f',strokeThickness:3}).setDepth(92);
+      this.add.text(757,42,'Mana',{fontFamily:'monospace',fontSize:'12px',color:'#ede1fe',stroke:'#4f405a',strokeThickness:2}).setDepth(92);
       this.manaBar=this.add.graphics().setDepth(92);
+      this.bossBar=this.add.graphics().setDepth(92);
+      this.add.text(W/2,17,'THE VERDANT CROWN',{fontFamily:'monospace',fontSize:'13px',fontStyle:'bold',color:'#fff8dc',stroke:'#344a59',strokeThickness:3}).setOrigin(.5).setDepth(94);
       this.dashBar=this.add.graphics().setDepth(92);
-      this.tipText=this.add.text(482,508,'MOVE  •  DOUBLE JUMP  •  DASH  •  ATTACK  •  SWITCH',{fontFamily:'monospace',fontSize:'12px',fontStyle:'bold',color:'#faf8d0',stroke:'#1d5252',strokeThickness:3}).setOrigin(.5).setDepth(91);
+      this.timeText=this.add.text(936,84,'00:00',{fontFamily:'monospace',fontSize:'12px',color:'#f3f2df',stroke:'#3a5665',strokeThickness:2}).setDepth(92).setOrigin(1,0);
+      this.telegraphText=this.add.text(480,107,'',{fontFamily:'monospace',fontSize:'16px',fontStyle:'bold',color:'#fff0a5',stroke:'#2b4351',strokeThickness:4}).setOrigin(.5).setDepth(96);
+      this.tipText=this.add.text(482,518,'MOVE  •  DOUBLE JUMP  •  DASH  •  ATTACK  •  SWITCH',{fontFamily:'monospace',fontSize:'12px',fontStyle:'bold',color:'#faf8d0',stroke:'#1d5252',strokeThickness:3}).setOrigin(.5).setDepth(91);
       if(window.matchMedia&&window.matchMedia('(pointer:coarse)').matches)this.tipText.setVisible(false);
       this.later(7000,()=>this.tipText.setVisible(false));
-      this.toast=this.add.text(W/2,153,'',{fontFamily:'monospace',fontSize:'14px',fontStyle:'bold',color:'#f5fff7',stroke:'#315a53',strokeThickness:3}).setOrigin(.5).setDepth(95);
+      this.toast=this.add.text(W/2,137,'',{fontFamily:'monospace',fontSize:'14px',fontStyle:'bold',color:'#f5fff7',stroke:'#315a53',strokeThickness:3}).setOrigin(.5).setDepth(95);
       this.redrawUI();
     }
     redrawUI(){
       this.hearts.setText('♥'.repeat(this.hp)+'♡'.repeat(this.maxHP-this.hp));
-      this.weaponName.setText(this.mode==='blade'?'⚔  LEAFBLADE • CLOSE RANGE':'✦  STAR WAND • AUTO AIM');
-      this.bossBar.clear();rect(this.bossBar,0x163748,308,53,343,17);rect(this.bossBar,0xa6dbf2,311,56,337*Math.max(0,this.bossHP/this.bossMax),11);
-      rect(this.bossBar,0xffffff,312,57,335*Math.max(0,this.bossHP/this.bossMax),2,.55);
-      this.manaBar.clear();rect(this.manaBar,0x284968,25,107,150,6,.85);rect(this.manaBar,0xa798f1,26,108,this.mana/100*148,4);
-      this.dashBar.clear();rect(this.dashBar,0x285769,25,120,150,7,.8);
-      const ready=Math.min(1,Math.max(0,(this.clock-this.lastDash)/1000));
-      rect(this.dashBar,0x8eedc7,27,122,146*ready,3);
+      this.weaponName.setText(this.mode==='blade'?'1 • Leafblade':'2 • Star Wand');
+      this.slotOutline.clear();
+      const sx=this.mode==='blade'?11:51;
+      const light=0xf5dfa4;
+      rect(this.slotOutline,light,sx,10,40,2);rect(this.slotOutline,light,sx,48,40,2);
+      rect(this.slotOutline,light,sx,10,2,40);rect(this.slotOutline,light,sx+38,10,2,40);
+      this.bossBar.clear();
+      rect(this.bossBar,0x172939,327,36,306,13,.86);
+      rect(this.bossBar,0x6e7a84,329,38,302,9,.85);
+      rect(this.bossBar,0x91c9eb,330,39,300*Math.max(0,this.bossHP/this.bossMax),7);
+      rect(this.bossBar,0xc6efff,330,39,300*Math.max(0,this.bossHP/this.bossMax),2,.68);
+      this.manaBar.clear();
+      rect(this.manaBar,0x2a3457,797,45,134,8,.92);
+      rect(this.manaBar,0x737ee8,799,47,130*this.mana/100,4);
+      this.dashBar.clear();
+      rect(this.dashBar,0x213546,15,74,137,7,.65);
+      rect(this.dashBar,0x99e4c2,17,76,133*Math.min(1,Math.max(0,(this.clock-this.lastDash)/1000)),3);
     }
     overlay(title,eyebrow,description,action){
       this.playing=false;el('shell').classList.add('menu-open');
@@ -610,5 +631,5 @@
     physics:{default:'arcade',arcade:{gravity:{y:1340},debug:false}},render:{roundPixels:true},
     scene:[VerdantCourt]
   });
-  window.slimefall={version:'0.5.0',game};
+  window.slimefall={version:'0.6.0',game};
 })();
