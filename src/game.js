@@ -1,4 +1,4 @@
-/* Slimefall: Crownfall v0.4 — an original mobile-first pixel-art boss encounter.
+/* Slimefall: Forest Art Pass v0.5 — an original mobile-first pixel-art boss encounter.
    Hand-coded art and mechanics informed by genre research; no Terraria assets used.
    Runs as a static Phaser 3 site. */
 (() => {
@@ -120,9 +120,9 @@
     rect(g,0x2c668c,16,22,6,2);
   }
   function makeArt(scene) {
-    for(let i=0;i<6;i++)texture(scene,'runner'+i,44,52,g=>heroArt(g,i));
-    for(const state of ['idle','alert','air','land'])texture(scene,'sovereign_'+state,128,110,g=>slimeArt(g,state));
-    texture(scene,'minislime',35,28,g=>babyArt(g,0));texture(scene,'minislime_green',35,28,g=>babyArt(g,1));
+    for(let i=0;i<6;i++)if(!scene.textures.exists('runner'+i))texture(scene,'runner'+i,44,52,g=>heroArt(g,i));
+    for(const state of ['idle','alert','air','land'])if(!scene.textures.exists('sovereign_'+state))texture(scene,'sovereign_'+state,128,110,g=>slimeArt(g,state));
+    if(!scene.textures.exists('minislime'))texture(scene,'minislime',35,28,g=>babyArt(g,0));if(!scene.textures.exists('minislime_green'))texture(scene,'minislime_green',35,28,g=>babyArt(g,1));
     texture(scene,'starbolt',20,18,g=>{rect(g,0x395a91,2,7,17,5);rect(g,0x8e7ada,5,4,13,11);rect(g,0xf3d7ff,10,7,7,5);rect(g,0xfdf7d4,13,8,3,2);});
     texture(scene,'shockwave',26,24,g=>{rect(g,0x5c6baa,2,12,22,12);rect(g,0x87adf0,8,5,12,17);rect(g,0xcbd5ff,12,0,5,17);});
     texture(scene,'heartdrop',18,18,g=>{rect(g,0x512943,3,2,5,5);rect(g,0x512943,11,2,5,5);rect(g,0xf47b8e,4,3,10,9);rect(g,0xf47b8e,6,11,6,4);rect(g,0xffcfcc,5,4,4,3);});
@@ -156,6 +156,14 @@
   }
   class VerdantCourt extends Phaser.Scene {
     constructor(){super({key:'VerdantCourt'});}
+    preload(){
+      // Original hand-rendered pixel PNGs, loaded as real image textures; fallback art remains if offline asset fails.
+      for (const file of ['forest-background','forest-terrain','forest-platforms','forest-foreground'])
+        this.load.image(file,'assets/'+file+'.png');
+      for(let i=0;i<6;i++)this.load.image('runner'+i,'assets/runner'+i+'.png');
+      for(const pose of ['idle','alert','air','land'])this.load.image('sovereign_'+pose,'assets/sovereign_'+pose+'.png');
+      for(const name of ['minislime','minislime_green'])this.load.image(name,'assets/'+name+'.png');
+    }
     create(){
       currentScene=this;this.clock=0;this.seconds=0;this.playing=false;this.done=false;this.paused=false;
       this.hp=8;this.maxHP=8;this.bossHP=1050;this.bossMax=1050;this.mana=100;
@@ -169,8 +177,8 @@
       makeArt(this);this.backdrop();this.land();this.actors();this.interface();
       this.keys=this.input.keyboard.addKeys('A,D,LEFT,RIGHT,SPACE,UP,W,J,K,P,ESC,ENTER,SHIFT');
       this.input.keyboard.addCapture(['SPACE','UP','LEFT','RIGHT','SHIFT']);
-      this.overlay('SLIMEFALL','THE VERDANT CROWN  •  v0.4','Double-jump. Dash through danger. Switch weapons and take the crown.','BEGIN BATTLE');
-      window.slimefall={version:'0.4.0',game:this.game,play:()=>this.closeOverlay(),state:()=>({playing:this.playing,hp:this.hp,bossHP:this.bossHP,bossState:this.bossState,weapon:this.mode,minis:this.minis.length,time:Math.floor(this.seconds)}),reset:()=>this.scene.restart()};
+      this.overlay('SLIMEFALL','THE EMERALD FOREST  •  v0.5','A handcrafted pixel forest. One royal slime. One chance to claim the crown.','BEGIN BATTLE');
+      window.slimefall={version:'0.5.0',game:this.game,play:()=>this.closeOverlay(),state:()=>({playing:this.playing,hp:this.hp,bossHP:this.bossHP,bossState:this.bossState,weapon:this.mode,minis:this.minis.length,time:Math.floor(this.seconds)}),reset:()=>this.scene.restart()};
     }
     backdrop(){
       const rng=rand(39071),sky=this.add.graphics().setDepth(-60);
@@ -199,6 +207,10 @@
         const fleck=this.add.rectangle(rng()*W,235+rng()*206,i%3?3:4,3,i%4?0xffe79a:0xe0fbcb,.35+rng()*.3).setDepth(-12);
         this.tweens.add({targets:fleck,y:fleck.y-28-rng()*16,alpha:.04,duration:1600+rng()*2800,yoyo:true,repeat:-1,delay:rng()*2100});
       }
+      // v0.5 artwork covers earlier geometric placeholders with authored 2px pixels.
+      // Placed above primitive scenery but behind motes, platforms and characters.
+      if(this.textures.exists('forest-background'))
+        this.add.image(0,0,'forest-background').setOrigin(0,0).setDepth(-20);
     }
     land(){
       const ground=this.add.graphics().setDepth(-5);
@@ -236,6 +248,9 @@
         if(i%3===0){rect(ground,0xd7f8a4,x,GROUND-14,3,3);rect(ground,0xffd8ae,x+2,GROUND-16,3,3);}
       }
       const earth=this.add.zone(W/2,GROUND+45,W,90);this.physics.add.existing(earth,true);this.earth=earth;
+      if(this.textures.exists('forest-terrain'))this.add.image(0,0,'forest-terrain').setOrigin(0,0).setDepth(-4);
+      if(this.textures.exists('forest-platforms'))this.add.image(0,0,'forest-platforms').setOrigin(0,0).setDepth(6);
+      if(this.textures.exists('forest-foreground'))this.add.image(0,0,'forest-foreground').setOrigin(0,0).setDepth(22).setAlpha(.88);
     }
     actors(){
       this.playerShade=this.add.ellipse(240,GROUND+1,41,9,0x1b433b,.35).setDepth(4);
@@ -286,17 +301,25 @@
       this.playing=false;el('shell').classList.add('menu-open');
       if(this.cover)this.cover.destroy();
       const c=this.add.container(W/2,H/2).setDepth(400);this.cover=c;
-      const dim=this.add.rectangle(0,0,W,H,0x143149,.56).setInteractive();
-      const shadow=this.add.rectangle(6,9,596,330,0x14283d,.5);
-      const panel=this.add.rectangle(0,0,596,330,0x1b4956,.96).setStrokeStyle(4,0xb6dfa5);
-      const border=this.add.rectangle(0,0,576,310).setStrokeStyle(1,0x6bada2);
-      const eyebrowTxt=this.add.text(0,-119,eyebrow,{fontFamily:'monospace',fontSize:'15px',color:'#d5efbe',letterSpacing:2}).setOrigin(.5);
-      const titleTxt=this.add.text(0,-64,title,{fontFamily:'monospace',fontSize:title.length>12?'39px':'60px',fontStyle:'bold',color:'#fff2c7',stroke:'#1b5261',strokeThickness:5}).setOrigin(.5);
+      const dim=this.add.rectangle(0,0,W,H,0x102532,.62).setInteractive();
+      const shadow=this.add.rectangle(9,11,602,336,0x14202b,.72);
+      const panel=this.add.rectangle(0,0,596,330,0x173b44,.97).setStrokeStyle(6,0x1b3037);
+      const border=this.add.rectangle(0,0,572,306).setStrokeStyle(3,0xd6b57a);
+      const eyebrowTxt=this.add.text(0,-119,eyebrow,{fontFamily:'monospace',fontSize:'15px',color:'#d8c692',letterSpacing:2}).setOrigin(.5);
+      const titleTxt=this.add.text(0,-64,title,{fontFamily:'monospace',fontSize:title.length>12?'39px':'60px',fontStyle:'bold',color:'#f9e8b7',stroke:'#142f3c',strokeThickness:7}).setOrigin(.5);
       const message=this.add.text(0,11,description,{fontFamily:'monospace',fontSize:'16px',color:'#eafcf5',wordWrap:{width:500},align:'center',lineSpacing:8}).setOrigin(.5);
-      const button=this.add.rectangle(0,109,330,68,0x7cb270).setStrokeStyle(3,0xdaefa6).setInteractive({useHandCursor:true});
-      const text=this.add.text(0,109,action,{fontFamily:'monospace',fontSize:'22px',fontStyle:'bold',color:'#173a44'}).setOrigin(.5);
+      const button=this.add.rectangle(0,109,330,68,0x78b58c).setStrokeStyle(5,0x1b3037).setInteractive({useHandCursor:true});
+      const text=this.add.text(0,109,action,{fontFamily:'monospace',fontSize:'22px',fontStyle:'bold',color:'#183b37'}).setOrigin(.5);
       button.on('pointerdown',()=>this.closeOverlay());
-      c.add([dim,shadow,panel,border,eyebrowTxt,titleTxt,message,button,text]);
+      const corner=this.add.graphics();
+      for(const x of [-280,280])for(const y of [-147,147]){
+        rect(corner,0xc6a96b,x-7,y-7,14,14);
+        rect(corner,0x3a797a,x-4,y-4,8,8);
+        rect(corner,0xafe7cb,x-2,y-2,3,3);
+      }
+      rect(corner,0xc6a96b,-249,-92,498,2,.65);
+      rect(corner,0xc6a96b,-249,54,498,2,.65);
+      c.add([dim,shadow,panel,border,corner,eyebrowTxt,titleTxt,message,button,text]);
     }
     closeOverlay(){
       if(!this.cover)return;
@@ -587,5 +610,5 @@
     physics:{default:'arcade',arcade:{gravity:{y:1340},debug:false}},render:{roundPixels:true},
     scene:[VerdantCourt]
   });
-  window.slimefall={version:'0.4.0',game};
+  window.slimefall={version:'0.5.0',game};
 })();

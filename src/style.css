@@ -43,3 +43,17 @@ button{font-family:inherit;cursor:pointer;touch-action:none;-webkit-appearance:n
 #game canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 
 @media (pointer:coarse) and (orientation:portrait){#mobile-controls{padding-left:7px;padding-right:7px}.left-controls{gap:4px}.right-controls{gap:3px}.move{width:52px;height:52px}.alt,.dash{width:43px;height:43px}.jump{width:54px;height:54px}.attack{width:58px;height:58px}}
+
+/* v0.5 authored sprite pass: tactile, squared-off fantasy HUD. */
+#shell{background:#366a81}
+#game canvas{border:0;box-shadow:0 0 0 3px #183f4d80;image-rendering:pixelated}
+#banner{font-size:12px;letter-spacing:.16em;text-shadow:2px 2px #203b40,0 0 5px #203b40}
+#banner span{color:#f1d48c}
+#top-actions button{border-radius:2px;border-width:2px;background:#173e46da;border-color:#b7d5ac;box-shadow:0 4px 0 #1e3440}
+.control{border-radius:3px;border-width:2px;border-color:#b4d7c7;background:#194f57b8;box-shadow:0 5px 0 #183741b8,inset 0 3px #d7eacc3b;backdrop-filter:blur(2px)}
+.control:active,.control.pressed{background:#66a78acd;border-color:#f6e4a7}
+.attack{background:#9d6776c7;border-color:#f4d5ad}
+.jump{background:#44849fbd}
+.dash{background:#458876c7}
+#rotate{border-radius:2px}
+@media (pointer:coarse) and (max-height:430px){.control{opacity:.87}}

@@ -1,32 +1,17 @@
-# Slimefall — The Verdant Crown (v0.4)
+# Slimefall – Forest Art Pass v0.5
 
-A free original mobile-first side-view pixel-art boss battle made with Phaser 3.86. Not affiliated with Re-Logic or Terraria. No assets, music, UI artwork, or source code are copied from Terraria.
+Hand-authored, original pixel art for the mobile boss-rush prototype. No external Terraria sprite assets are used. The existing game logic, physics, controls, and boss behaviors are retained from v0.4.
 
-## Play
+## What's new visually
+- Native PNG pixel-art hero (six expressive animation poses), slime boss (four states), and small slime enemies.
+- Full scenic pixel forest with layered blue sky, original deciduous trees, rolling mountains, distant pine forest, atmospheric haze and detailed flora.
+- Decorated dirt-and-grass terrain, original textured wooden bridges, foreground leaf layers.
+- Squared-off touch controls and a new ornate pixel-art menu color scheme.
 
-Open the static GitHub Pages website on your phone and rotate to landscape for the best view. Touch arrows to move, up to jump, star to attack, ⇄ to swap weapons. Desktop: A/D or arrow keys move, Space/W/Up jump, hold J attack, K swap, P pause, Enter starts/retries.
+## Setup
 
-## What's new
+Static site: commit index.html, src/ and assets/ to the root of the `main` branch; enable GitHub Pages on main / root. No npm or Replit needed. The engine is Phaser 3.86 served by cdnjs.
 
-- Rebuilt daytime forest with sky, clouds, mountains, layered trees, flowers, pixel-tile soil, and three jumpable one-way wooden bridges.
-- Redrawn original small six-frame character, big blue slime boss, baby slime enemies, and combat particles.
-- Boss jump rhythm: normal, normal, short, high. Speeds up and shrinks as HP drops, triggers clearly marked teleport moves, splits to spawn mini-slimes at HP thresholds, and creates ground waves after high jumps.
-- More responsive variable jump and buffered/coyote jump; melee combo and auto-aim magic, mana resource, breakable minions that can drop hearts, better feedback, pause/win/lose/retry.
-- Mobile-first touch controls, sound toggle, landscape support and versioned static assets to avoid older caches.
+## Limits
 
-## Architecture
-
-`index.html` and `src/style.css` implement a responsive page and touch overlay. `src/game.js` has an original Phaser scene with procedurally generated Graphics textures, Arcade physics, UI, boss FSM and sound effects. Pure static hosting: no npm build, paid credits, backend, accounts or persistent PC.
-
-## QA and follow-up
-
-`node --check src/game.js` verifies parsing; actual testing needs browser/device play. Prioritize mobile Safari control tests, balancing jumping onto platforms, boss hit detection, victory and replay before adding more bosses.
-
-## v0.4 feel pass
-- New original multi-frame pixel silhouettes for the player and jelly boss.
-- Double jump (tap jump twice) and short dash (new touch button / Shift on desktop), with recovery.
-- More responsive locomotion and visible dash/footstep trails.
-- Faster three-hit combo and a pixel-stepped slash, revised phase-based boss attack pacing.
-- Richer original tree canopies, foreground greenery and more organic slime animation frames.
-- Remains zero-cost static hosting with no paid or third-party game art.
-- Gameplay must be tested on an actual phone; JS syntax passes but that cannot establish playability.
+These are intentionally original sprites inspired by 2D pixel-art games, not extracted or copied from Terraria. The generated assets have been visually previewed as assembled art; full touchscreen Safari QA still requires device testing. If assets fail to load, the old procedural fallback sprites remain for characters, and the old scenery still displays.
