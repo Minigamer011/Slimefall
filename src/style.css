@@ -35,3 +35,11 @@ button{font-family:inherit;cursor:pointer;touch-action:none;-webkit-appearance:n
  #mobile-controls{padding-bottom:max(10px,env(safe-area-inset-bottom))}
  .move{width:60px;height:60px}.jump{width:64px;height:64px}.attack{width:72px;height:72px}.alt{width:51px;height:51px}
 }
+
+/* v0.4: thumb-friendly dash and richer retro input feedback. */
+.dash{width:clamp(59px,8.2vw,70px);height:clamp(59px,8.2vw,70px);background:#2e8288da;border-color:#b6f4d7;font-size:25px}
+@media (pointer:coarse) and (orientation:portrait){.dash{width:46px;height:46px}}
+@media (pointer:coarse) and (max-height:430px){.dash{width:48px;height:48px}.right-controls{gap:6px}.left-controls{gap:7px}}
+#game canvas{image-rendering:pixelated;image-rendering:crisp-edges}
+
+@media (pointer:coarse) and (orientation:portrait){#mobile-controls{padding-left:7px;padding-right:7px}.left-controls{gap:4px}.right-controls{gap:3px}.move{width:52px;height:52px}.alt,.dash{width:43px;height:43px}.jump{width:54px;height:54px}.attack{width:58px;height:58px}}
