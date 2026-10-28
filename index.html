@@ -5,23 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no"/>
   <meta name="theme-color" content="#24576b"/>
   <meta name="description" content="Slimefall: The Verdant Crown, a free original mobile-friendly pixel-art boss battle."/>
-  <title>Slimefall — The Verdant Crown v0.3</title>
-  <link rel="stylesheet" href="src/style.css?v=0.3.0"/>
+  <title>Slimefall — The Verdant Crown v0.4</title>
+  <link rel="stylesheet" href="src/style.css?v=0.4.0"/>
 </head>
 <body>
   <main id="shell">
     <div id="game" role="application" aria-label="Slimefall pixel-art boss fight"></div>
     <div id="banner">SLIMEFALL <span>•</span> VERDANT CROWN</div>
-    <div id="top-actions"><button id="sound" aria-label="Unmute sounds">♫̸</button><button id="pause" aria-label="Pause or resume">Ⅱ</button></div>
+    <div id="top-actions"><button id="sound" aria-label="Mute sounds">♫</button><button id="pause" aria-label="Pause or resume">Ⅱ</button></div>
     <div id="mobile-controls" aria-label="Touch game controls">
       <div class="left-controls"><button id="move-left" class="control move" aria-label="Move left">◀</button><button id="move-right" class="control move" aria-label="Move right">▶</button></div>
-      <div class="right-controls"><button id="switch" class="control alt" aria-label="Switch weapon">⇄</button><button id="jump" class="control jump" aria-label="Jump">↑</button><button id="attack" class="control attack" aria-label="Attack">✦</button></div>
+      <div class="right-controls"><button id="switch" class="control alt" aria-label="Switch weapon">⇄</button><button id="dash" class="control dash" aria-label="Dash">➜</button><button id="jump" class="control jump" aria-label="Jump">↑</button><button id="attack" class="control attack" aria-label="Attack">✦</button></div>
     </div>
     <div id="rotate">↻<span>Rotate sideways for a bigger game view.</span></div>
-    <p id="instructions">A/D MOVE  •  SPACE JUMP  •  HOLD J ATTACK  •  K SWITCH  •  P PAUSE</p>
+    <p id="instructions">A/D MOVE  •  SPACE JUMP  •  SHIFT DASH  •  HOLD J ATTACK  •  K SWITCH  •  P PAUSE</p>
   </main>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.86.0/phaser.min.js"></script>
   <script>if(!window.Phaser)document.getElementById('game').textContent='Could not load the Phaser game engine. Check your connection and reload.';</script>
-  <script src="src/game.js?v=0.3.0"></script>
+  <script src="src/game.js?v=0.4.0"></script>
 </body>
 </html>
