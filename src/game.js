@@ -1,4 +1,4 @@
-/* Slimefall: Verdant Crown v0.3 — an original mobile-first pixel-art boss encounter.
+/* Slimefall: Crownfall v0.4 — an original mobile-first pixel-art boss encounter.
    Hand-coded art and mechanics informed by genre research; no Terraria assets used.
    Runs as a static Phaser 3 site. */
 (() => {
@@ -7,8 +7,8 @@
   const W = 960, H = 540, GROUND = 465;
   const el = id => document.getElementById(id);
   const down = { left:false, right:false, jump:false, attack:false };
-  const pulse = {jump:false, switch:false, pause:false};
-  let currentScene, audioContext, muted = true;
+  const pulse = {jump:false, switch:false, pause:false, dash:false};
+  let currentScene, audioContext, muted = false;
   const PALETTE = {ink:0x182d3f, sky:0x7bbfe3, leaf:0x3c925c, blue:0x4ca8e6};
   function rand(seed) { let s = seed; return () => ((s=(s*16807)%2147483647)/2147483647); }
   const $audio = (freq,duration=.07,type='square',vol=.024) => {
@@ -30,6 +30,7 @@
     for(const eventName of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(eventName,ev=>{pointers.delete(ev.pointerId);if(!pointers.size){down[key]=false;button.classList.remove('pressed');}});
   }
   el('switch').addEventListener('pointerdown',ev=>{ev.preventDefault();pulse.switch=true;});
+  el('dash').addEventListener('pointerdown',ev=>{ev.preventDefault();pulse.dash=true;});
   el('pause').addEventListener('click',()=>{pulse.pause=true;});
   el('sound').addEventListener('click',()=>{muted=!muted;el('sound').textContent=muted?'♫̸':'♫';el('sound').setAttribute('aria-label',muted?'Unmute sounds':'Mute sounds');$audio(640,.09,'triangle');});
   window.addEventListener('blur',()=>{for(const k of Object.keys(down))down[k]=false;});
@@ -37,45 +38,90 @@
 
   function texture(scene,key,w,h,paint){const g=scene.make.graphics({x:0,y:0},false);paint(g);g.generateTexture(key,w,h);g.destroy();}
   function rect(g,c,x,y,w,h,a=1){g.fillStyle(c,a).fillRect(x,y,w,h);}
-  function heroArt(g,frame=0) {
-    // 34 × 50px character, deliberate 2–3px pixel clusters with four distinct frames.
-    rect(g,0x152d46,10,3,17,13);rect(g,0x466b75,10,4,16,8);
-    rect(g,0x203c53,7,11,24,7);rect(g,0xe1b987,11,15,16,12);
-    rect(g,0xf2d6a1,13,15,10,3);rect(g,0x1c2b3e,22,20,3,4);
-    rect(g,0x182a3d,18,20,3,3);rect(g,0x56a8ae,8,27,23,7);rect(g,0x81d6c9,8,27,13,3);
-    rect(g,0x396782,9,34,22,7);rect(g,0x24506d,11,40,18,6);
-    rect(g,0x9f6a4b,27,34,5,11);rect(g,0xecc49e,29,33,4,8);
-    const lx=frame===1?7:frame===2?11:frame===3?10:9, rx=frame===1?23:frame===2?18:frame===3?25:22;
-    const ly=frame===1?40:frame===2?43:42,ry=frame===1?43:frame===2?40:42;
-    rect(g,0x243e5b,lx,ly,9,7);rect(g,0x243e5b,rx,ry,9,7);
-    rect(g,0x111f39,lx-1,ly+6,10,3);rect(g,0x111f39,rx,ry+6,10,3);
-    rect(g,0xc8eeea,7,14,4,3);rect(g,0x80b5c4,9,6,17,3);
-    rect(g,0x1f3b4e,7,27,3,6);rect(g,0x73d1a6,3,27,7,4); // teal scarf tail
+  // Sprite palette and silhouette are original. Pixel clusters are intentionally shaped,
+  // unlike the earlier flat rectangle characters.
+  const px=(g,c,x,y,w=1,h=1,z=2)=>rect(g,c,Math.round(x*z),Math.round(y*z),Math.round(w*z),Math.round(h*z));
+  function heroArt(g,frame=0){
+    const walk=frame===1?1:frame===2?-1:0;
+    const airborne=frame===3, slash=frame===4, hurt=frame===5;
+    const skin=0xe7b989,bright=0xf6d3a5,shirt=0x57bfc0,shade=0x277886,edge=0x193951;
+    // Boots, knees and swinging legs: a readable silhouette on the forest backdrop.
+    const ly=airborne?21:22+Math.max(0,walk),ry=airborne?22:22+Math.max(0,-walk);
+    px(g,edge,5+walk,ly,5,2);px(g,edge,11-walk,ry,5,2);
+    px(g,0x284d6a,6+walk,17,4,ly-16);px(g,0x284d6a,12-walk,17,4,ry-16);
+    px(g,0x6d4860,5+walk,ly-1,6,2);px(g,0x6d4860,11-walk,ry-1,6,2);
+    px(g,0xd6ebbd,5+walk,ly,5,1);px(g,0xd6ebbd,12-walk,ry,4,1);
+    // Scarf with lively, offset tail.
+    px(g,0x1d5267,2+(frame%3),13,7,3);px(g,0x4fa6ac,2+(frame%3),13,6,2);
+    // Torso and arms.
+    px(g,edge,5,12,12,7);px(g,shade,6,13,10,5);px(g,shirt,7,13,7,3);
+    px(g,0x9ce1cf,7,13,6,1);px(g,0x29566b,10,17,5,2);
+    const armY=slash?10:(airborne?12:15);
+    px(g,edge,15,armY,4,5);px(g,skin,16,armY+2,3,3);px(g,bright,17,armY+2,2,1);
+    // Face, side-swept hair and a bandanna.
+    px(g,edge,5,3,13,10);px(g,skin,6,6,11,7);px(g,bright,7,7,7,4);
+    px(g,edge,5,2,13,5);px(g,0x765f62,6,2,11,3);px(g,0xb08067,7,3,7,1);
+    px(g,0x356d77,4,5,14,2);px(g,0x83d8bd,4,5,10,1);
+    px(g,edge,14,9,2,2);px(g,0xffffff,14,9,1,1);
+    px(g,0xb77767,10,12,3,1);
+    // Trail and shoulder pin give the character a bright color signature.
+    px(g,0xdce6b6,5,13,2,2);px(g,0xb7efca,6,13,1,1);
+    if(hurt)px(g,0xfff4d9,6,7,10,5);
+    if(slash){px(g,0xbfcf9a,18,5,2,7);px(g,0xf8efd1,18,3,2,5);px(g,0x284956,18,12,3,2);}
   }
-  function slimeArt(g,angry=false) {
-    // Broad, jelly-like 128 × 110 silhouette, layered translucent rim and gold crown.
-    rect(g,0x244674,14,40,101,51);rect(g,0x244674,20,28,89,71);
-    rect(g,0x2a6db3,10,53,109,41);rect(g,0x3789cd,13,36,105,56);
-    rect(g,angry?0x4b9dd7:0x61b9ed,20,22,92,68);rect(g,0x79c6f3,25,27,80,45);
-    rect(g,0x9fd9fb,29,32,31,9);rect(g,0xd5efff,34,35,12,5);
-    rect(g,0x427bad,19,78,95,13);rect(g,0x2b6295,28,90,78,7);
-    rect(g,0x1d426a,43,52,10,15);rect(g,0x1d426a,83,52,10,15);
-    rect(g,0xe6f9ff,46,54,4,7);rect(g,0xe6f9ff,86,54,4,7);
-    rect(g,0x346b9b,59,78,18,4);
-    if(angry){rect(g,0x1b486b,39,46,16,4);rect(g,0x1b486b,81,46,16,4);}
-    rect(g,0x6b4b26,42,21,61,7);rect(g,0xe5ad45,44,11,58,14);
-    rect(g,0xffdb72,44,8,10,14);rect(g,0xffdb72,60,0,12,21);rect(g,0xffdb72,79,4,11,16);rect(g,0xffdb72,95,9,10,13);
-    rect(g,0xfff2aa,63,3,4,8);rect(g,0xf0c35a,84,7,3,7);rect(g,0x52d5c7,71,14,9,6);
-    rect(g,0xfff0af,48,15,11,3);rect(g,0xc18935,51,23,48,3);
+  function slimeArt(g,state='idle'){
+    // 2px jagged pixel contour with three-dimensional top-light and translucent rim.
+    // Independent drawn frames support anticipation, flying and impact instead of stretching one image.
+    const phase={idle:0,alert:1,air:2,land:3}[state]||0;
+    for(let y=12;y<53;y++){
+      const t=(y-12)/41;
+      const width= t<.31 ? 12+15*Math.sqrt(Math.max(0,1-(1-t/.31)**2))
+          : t<.83 ? 27+Math.sin(t*9)*.65 : 27-10*((t-.83)/.17);
+      const cy= phase===2?-1:phase===3?2:0;
+      const horizontalShift=phase===1?Math.sin(y*.36)*1.3:0;
+      const minX=Math.max(0,Math.ceil(32-width+horizontalShift)),maxX=Math.min(63,Math.floor(32+width+horizontalShift));
+      for(let x=minX;x<=maxX;x++){
+        const edgeDist=Math.min(x-minX,maxX-x);
+        const dither=(x*17+y*23)%17;
+        let color=edgeDist<2?0x27668d: y>46?0x2c679c:x<25&&y<31?0xa5e7f2:x<37&&y<40?0x64c7e7:0x419bd0;
+        if(edgeDist>5&&y>26&&y<45&&dither===1)color=0x87d3eb;
+        if(y>49&&dither<3)color=0x78d2e7;
+        px(g,color,x,y+cy);
+      }
+    }
+    // Reflections give the slime a glasslike surface, not a square blob.
+    px(g,0xd5f5f8,17,21,10,3);px(g,0xf7fcf0,19,21,4,1);
+    px(g,0x9ee8f0,16,24,5,2);px(g,0x9de0f0,42,38,5,2);
+    // Face changes to the angry expression during an incoming attack.
+    px(g,0x153f69,22,31,5,6);px(g,0x153f69,41,31,5,6);
+    px(g,0xfff5d7,23,32,2,2);px(g,0xfff5d7,42,32,2,2);
+    px(g,0x254b70,30,42,9,2);px(g,0x3f769b,32,43,5,2);
+    if(phase===1){px(g,0x1a496a,21,29,7,2);px(g,0x1a496a,40,29,7,2);}
+    // Crown has perspective, jewels and a dark underside to stay legible.
+    px(g,0x67542e,22,13,25,6);px(g,0xbb8436,23,8,23,8);
+    for(const [x,h] of [[23,8],[31,13],[41,9]]){
+      px(g,0xf7c95d,x,15-h,5,h+1);px(g,0xffefa1,x+1,15-h,2,h-2);
+    }
+    px(g,0xf6e4a0,25,9,19,3);px(g,0x4ea7a7,33,10,5,4);px(g,0xc8f7ed,34,10,2,2);
+    px(g,0xffdc88,24,16,20,2);px(g,0x785a30,24,18,20,2);
   }
-  function babyArt(g,color=0) {
-    const base=color===0?0x478dc5:0x5cbd92,shine=color===0?0x8bc9f3:0x9ee6b4;
-    rect(g,0x1c4560,3,10,29,14);rect(g,base,2,9,30,13);rect(g,shine,6,5,21,13);
-    rect(g,0xc6f3fb,8,8,8,4);rect(g,0x15394b,12,16,3,4);rect(g,0x15394b,23,16,3,4);
+  function babyArt(g,color=0){
+    const base=color===0?0x4598d2:0x55b68c;
+    const rim=color===0?0x275c8c:0x276956;
+    const light=color===0?0xb3e8ff:0xb8efbc;
+    for(let y=4;y<26;y++){
+      const w=y<11?8+Math.round(7*Math.sin((y-4)/7*Math.PI/2)):y<21?16:16-(y-21)*2;
+      rect(g,rim,17-w,y,w*2,1);
+      if(w>3)rect(g,base,18-w,y,w*2-2,1);
+    }
+    rect(g,light,9,8,12,3);rect(g,0xf7fff4,11,8,5,2);
+    rect(g,0x24475e,11,16,3,4);rect(g,0x24475e,23,16,3,4);
+    rect(g,0xffffff,12,17,1,1);rect(g,0xffffff,24,17,1,1);
+    rect(g,0x2c668c,16,22,6,2);
   }
   function makeArt(scene) {
-    for(let i=0;i<4;i++)texture(scene,'runner'+i,34,50,g=>heroArt(g,i));
-    texture(scene,'sovereign',128,110,g=>slimeArt(g,false));texture(scene,'sovereign_alert',128,110,g=>slimeArt(g,true));
+    for(let i=0;i<6;i++)texture(scene,'runner'+i,44,52,g=>heroArt(g,i));
+    for(const state of ['idle','alert','air','land'])texture(scene,'sovereign_'+state,128,110,g=>slimeArt(g,state));
     texture(scene,'minislime',35,28,g=>babyArt(g,0));texture(scene,'minislime_green',35,28,g=>babyArt(g,1));
     texture(scene,'starbolt',20,18,g=>{rect(g,0x395a91,2,7,17,5);rect(g,0x8e7ada,5,4,13,11);rect(g,0xf3d7ff,10,7,7,5);rect(g,0xfdf7d4,13,8,3,2);});
     texture(scene,'shockwave',26,24,g=>{rect(g,0x5c6baa,2,12,22,12);rect(g,0x87adf0,8,5,12,17);rect(g,0xcbd5ff,12,0,5,17);});
@@ -87,16 +133,26 @@
     rect(g,0xd9f1f7,x+16,y+10,w-24,19);rect(g,0xf4fbfa,x+40,y,w-65,23);
     rect(g,0xe4f5f9,x+8,y+19,w-16,11);rect(g,0xffffff,x+45,y+2,Math.max(24,w/3),7,.72);
   }
-  function tree(g,x,y,scale,tint=0x34794f) {
-    const k=scale;const block=(c,a,b,w,h)=>rect(g,c,Math.round(x+a*k),Math.round(y+b*k),Math.round(w*k),Math.round(h*k));
-    block(0x584e44,-4,-109,13,116);block(0x83664b,-1,-98,3,77);
-    const shades=[tint,0x4e9963,0x2c6a4c,0x61a56a];
-    for(let i=0;i<5;i++){
-      const off=i*20;
-      block(shades[i%shades.length],-49+ i*6,-150+off,104-i*11,32);
-      block(shades[(i+1)%4],-39+i*5,-163+off,86-i*9,16);
+  function tree(g,x,y,scale,tint=0x34794f){
+    const k=scale; const b=(c,a,d,w,h)=>rect(g,c,Math.round(x+a*k),Math.round(y+d*k),Math.round(w*k),Math.round(h*k));
+    // Pixel canopy made from overlapping rounded clusters, thin branches and dithered leaves.
+    b(0x4e3d36,-7,-102,17,105);b(0x8d6750,-5,-105,5,105);b(0xc19666,0,-83,2,53);
+    for(const [dx,dy] of [[-20,-65],[18,-85],[-29,-102],[36,-107]]){
+      b(0x715443,Math.min(0,dx),dy,Math.abs(dx)+3,6);b(0xb08560,Math.min(0,dx),dy,Math.abs(dx)+3,2);
     }
-    block(0x82bd7b,-8,-153,8,5);block(0x7db777,22,-118,7,5);
+    const layer=[[0,-150,47,28,0x2b5f50],[-30,-135,39,29,0x337e5a],[30,-130,43,31,0x3b8a5b],
+                 [-20,-167,34,23,tint],[19,-170,37,24,0x4da769],[0,-184,35,22,0x55b26f]];
+    for(const [dx,dy,rw,rh,color] of layer){
+      for(let row=-rh;row<=rh;row+=7){
+        const width=Math.max(4,Math.round(rw*Math.sqrt(Math.max(0,1-row*row/(rh*rh)))));
+        b(color,dx-width,dy+row,width*2,7);
+        if((row+rh)%14===0)b(0x6bc279,dx-width+8,dy+row,Math.max(8,width/2),3);
+      }
+    }
+    for(let i=0;i<26;i++){
+      const dx=Math.sin(i*2.4)*37,dy=-143+Math.sin(i*4.3)*30;
+      b(i%4?0x74c980:0xb8dd8e,dx,dy,3+i%3,2+i%2);
+    }
   }
   class VerdantCourt extends Phaser.Scene {
     constructor(){super({key:'VerdantCourt'});}
@@ -104,16 +160,17 @@
       currentScene=this;this.clock=0;this.seconds=0;this.playing=false;this.done=false;this.paused=false;
       this.hp=8;this.maxHP=8;this.bossHP=1050;this.bossMax=1050;this.mana=100;
       this.mode='blade';this.face=1;this.lastAttack=-2000;this.hitUntil=-2000;this.lastGround=-2000;this.lastPressed=-2000;
+      this.airJumps=1;this.lastDash=-10000;this.dashUntil=-10000;this.attackPoseUntil=-9999;this.lastTrail=0;this.lastStep=0;
       this.wasJump=false;this.recentJump=-999;this.bossState='idle';this.nextBoss=1900;
       this.bossJump=0;this.bossBorn=0;this.bossPhase=0;this.bossMove='normal';this.bossWarningAt=0;
       this.shots=[];this.waves=[];this.minis=[];this.pickups=[];this.tasks=[];this.lastDusted=0;
       this.combo=0;this.hitsTaken=0;this.rng=rand(20261027);this.maxParticles=0;
       this.physics.world.setBounds(18,-110,W-36,690);this.cameras.main.setBackgroundColor('#7bbfe3');
       makeArt(this);this.backdrop();this.land();this.actors();this.interface();
-      this.keys=this.input.keyboard.addKeys('A,D,LEFT,RIGHT,SPACE,UP,W,J,K,P,ESC,ENTER');
-      this.input.keyboard.addCapture(['SPACE','UP','LEFT','RIGHT']);
-      this.overlay('SLIMEFALL','THE VERDANT CROWN','One crown. One arena. Fight, jump, and survive.','BEGIN BATTLE');
-      window.slimefall={version:'0.3.0',game:this.game,play:()=>this.closeOverlay(),state:()=>({playing:this.playing,hp:this.hp,bossHP:this.bossHP,bossState:this.bossState,weapon:this.mode,minis:this.minis.length,time:Math.floor(this.seconds)}),reset:()=>this.scene.restart()};
+      this.keys=this.input.keyboard.addKeys('A,D,LEFT,RIGHT,SPACE,UP,W,J,K,P,ESC,ENTER,SHIFT');
+      this.input.keyboard.addCapture(['SPACE','UP','LEFT','RIGHT','SHIFT']);
+      this.overlay('SLIMEFALL','THE VERDANT CROWN  •  v0.4','Double-jump. Dash through danger. Switch weapons and take the crown.','BEGIN BATTLE');
+      window.slimefall={version:'0.4.0',game:this.game,play:()=>this.closeOverlay(),state:()=>({playing:this.playing,hp:this.hp,bossHP:this.bossHP,bossState:this.bossState,weapon:this.mode,minis:this.minis.length,time:Math.floor(this.seconds)}),reset:()=>this.scene.restart()};
     }
     backdrop(){
       const rng=rand(39071),sky=this.add.graphics().setDepth(-60);
@@ -166,17 +223,29 @@
         this.platforms.push(z);
         for(let i=0;i<4;i++)rect(d,0x486b56,p.x-p.w/2+14+i*62,p.y+13,2,10+i%3*4);
       }
+      // Foreground grass and stones have tiny silhouettes, not just a flat ground strip.
+      for(let i=0;i<90;i++){
+        const xx=8+i*11+Math.floor(Math.sin(i*9)*4);
+        if(i%13===0){rect(ground,0x6c7974,xx,GROUND-6,14,7);rect(ground,0xa4b8a7,xx+2,GROUND-6,7,2);}
+        else if(i%9===0){rect(ground,0x4c9655,xx,GROUND-11,2,11);rect(ground,0x6ac574,xx+3,GROUND-8,2,8);}
+        else {rect(ground,i%2?0x348848:0x62b961,xx,GROUND-6,2,6);}
+      }
+      // Brighter foreground flower clusters, slowly floating ambient pollen.
+      for(let i=0;i<20;i++){
+        const x=17+i*49+(i*17)%23;
+        if(i%3===0){rect(ground,0xd7f8a4,x,GROUND-14,3,3);rect(ground,0xffd8ae,x+2,GROUND-16,3,3);}
+      }
       const earth=this.add.zone(W/2,GROUND+45,W,90);this.physics.add.existing(earth,true);this.earth=earth;
     }
     actors(){
       this.playerShade=this.add.ellipse(240,GROUND+1,41,9,0x1b433b,.35).setDepth(4);
       this.bossShade=this.add.ellipse(734,GROUND+2,125,17,0x224b52,.4).setDepth(4);
       this.player=this.physics.add.sprite(239,GROUND-26,'runner0').setDepth(19);
-      this.player.body.setSize(24,43).setOffset(5,5);
+      this.player.body.setSize(26,45).setOffset(9,6);
       this.player.setCollideWorldBounds(true).setDragX(1750).setMaxVelocity(400,950);
       this.physics.add.collider(this.player,this.earth);
       for(const z of this.platforms)this.physics.add.collider(this.player,z);
-      this.boss=this.physics.add.sprite(729,GROUND-54,'sovereign').setDepth(17);
+      this.boss=this.physics.add.sprite(729,GROUND-54,'sovereign_idle').setDepth(17);
       this.boss.body.setSize(110,88).setOffset(9,17);
       this.boss.setCollideWorldBounds(true).setMaxVelocity(670,1100).setDragX(700);
       this.physics.add.collider(this.boss,this.earth);
@@ -196,6 +265,10 @@
       this.timeText=this.add.text(932,22,'00:00',{fontFamily:'monospace',fontSize:'15px',color:'#28546e',stroke:'#c4e6e4',strokeThickness:2}).setDepth(92).setOrigin(1,0);
       this.telegraphText=this.add.text(480,111,'',{fontFamily:'monospace',fontSize:'17px',fontStyle:'bold',color:'#fff6bc',stroke:'#254b5b',strokeThickness:5}).setOrigin(.5).setDepth(96);
       this.manaBar=this.add.graphics().setDepth(92);
+      this.dashBar=this.add.graphics().setDepth(92);
+      this.tipText=this.add.text(482,508,'MOVE  •  DOUBLE JUMP  •  DASH  •  ATTACK  •  SWITCH',{fontFamily:'monospace',fontSize:'12px',fontStyle:'bold',color:'#faf8d0',stroke:'#1d5252',strokeThickness:3}).setOrigin(.5).setDepth(91);
+      if(window.matchMedia&&window.matchMedia('(pointer:coarse)').matches)this.tipText.setVisible(false);
+      this.later(7000,()=>this.tipText.setVisible(false));
       this.toast=this.add.text(W/2,153,'',{fontFamily:'monospace',fontSize:'14px',fontStyle:'bold',color:'#f5fff7',stroke:'#315a53',strokeThickness:3}).setOrigin(.5).setDepth(95);
       this.redrawUI();
     }
@@ -205,6 +278,9 @@
       this.bossBar.clear();rect(this.bossBar,0x163748,308,53,343,17);rect(this.bossBar,0xa6dbf2,311,56,337*Math.max(0,this.bossHP/this.bossMax),11);
       rect(this.bossBar,0xffffff,312,57,335*Math.max(0,this.bossHP/this.bossMax),2,.55);
       this.manaBar.clear();rect(this.manaBar,0x284968,25,107,150,6,.85);rect(this.manaBar,0xa798f1,26,108,this.mana/100*148,4);
+      this.dashBar.clear();rect(this.dashBar,0x285769,25,120,150,7,.8);
+      const ready=Math.min(1,Math.max(0,(this.clock-this.lastDash)/1000));
+      rect(this.dashBar,0x8eedc7,27,122,146*ready,3);
     }
     overlay(title,eyebrow,description,action){
       this.playing=false;el('shell').classList.add('menu-open');
@@ -254,6 +330,21 @@
         this.tweens.add({targets:p,x:x+Math.cos(phi)*dist,y:y+Math.sin(phi)*dist+23,alpha:0,duration:310+this.rng()*420,onComplete:()=>p.destroy()});
       }
     }
+    afterimage(){
+      if(this.clock-this.lastTrail<38)return;this.lastTrail=this.clock;
+      const body=this.add.image(this.player.x,this.player.y,this.player.texture.key).setFlipX(this.face<0)
+        .setAlpha(.33).setTint(this.dashUntil>this.clock?0xa9f9d4:0xc9f4e4).setDepth(15);
+      this.tweens.add({targets:body,alpha:0,scaleX:.8,scaleY:.8,duration:220,onComplete:()=>body.destroy()});
+    }
+    beginDash(now){
+      if(now-this.lastDash<1000||!this.playing)return;
+      this.lastDash=now;this.dashUntil=now+160;
+      const direction=this.face;
+      this.player.setVelocityX(direction*690).setVelocityY(Math.min(0,this.player.body.velocity.y));
+      this.hitUntil=Math.max(this.hitUntil,now+180);
+      this.confetti(this.player.x-direction*9,this.player.y,0xbaf5d6,16,42);
+      this.toastNow('WIND DASH',380);$audio(750,.09,'sawtooth',.016);
+    }
     number(x,y,n,c='#fdf3b3'){
       const text=this.add.text(x,y,''+n,{fontFamily:'monospace',fontSize:'20px',fontStyle:'bold',color:c,stroke:'#25517b',strokeThickness:4}).setDepth(65).setOrigin(.5);
       this.tweens.add({targets:text,y:y-45,alpha:0,duration:660,onComplete:()=>text.destroy()});
@@ -292,7 +383,7 @@
     }
     toastNow(message,duration){this.toast.setText(message);this.later(duration,()=>{if(this.toast.text===message)this.toast.setText('');});}
     blast(){
-      const delay=this.mode==='blade'?236:325;
+      const delay=this.mode==='blade'?206:310;
       if(!this.playing||this.clock-this.lastAttack<delay)return;
       if(this.mode==='wand'&&this.mana<10){$audio(135,.03);return;}
       this.lastAttack=this.clock;
@@ -300,11 +391,23 @@
       if(Math.abs(this.boss.x-this.player.x)<215)this.face=this.boss.x>=this.player.x?1:-1;
       this.player.setFlipX(this.face<0);
       if(this.mode==='blade'){
-        this.combo=(this.combo+1)%3;const power=this.combo===0?81:58;
-        const x=this.player.x+this.face*42,y=this.player.y-6;
-        this.fx.lineStyle(19,0x79d0ef,.25).beginPath().arc(x,y,51,this.face>0?-1.0:2.14,this.face>0?1.05:4.2,false).strokePath();
-        this.fx.lineStyle(6,0xf3f6d1).beginPath().arc(x,y,44,this.face>0?-1.1:2.04,this.face>0?1.05:4.2,false).strokePath();
-        this.later(125,()=>this.fx.clear());$audio(this.combo===0?485:410,.08,'triangle');
+        this.combo=(this.combo+1)%3;const power=this.combo===0?75:55;
+        const originX=this.player.x+this.face*26,originY=this.player.y-9;
+        const flourish=this.add.graphics().setDepth(45);
+        const dir=this.face;
+        // Blade draws a pixel-stepped diagonal crescent rather than a smooth debug arc.
+        for(let k=0;k<13;k++){
+          const theta=-1.18+k*.2+this.combo*.1;
+          const rr=42+Math.sin(k/12*Math.PI)*11;
+          const x=originX+dir*Math.cos(theta)*rr,y=originY+Math.sin(theta)*rr;
+          rect(flourish,0x2b718e,x+dir*3,y+4,15,9,.42);
+          rect(flourish,0xe5f9df,x,y,13,5,.93);
+          rect(flourish,0xffffff,x+dir*2,y,6,2,.96);
+        }
+        this.tweens.add({targets:flourish,alpha:0,duration:138,onComplete:()=>flourish.destroy()});
+        this.player.setTexture('runner4');this.attackPoseUntil=this.clock+125;
+        this.confetti(originX+dir*24,originY,0xcdf8e7,6,25);
+        $audio(this.combo===0?515:445,.075,'triangle');
         const dx=this.boss.x-this.player.x,dy=this.boss.y-this.player.y;
         const radius=74+48*this.boss.scaleX;
         if(dx*this.face>-35&&Math.abs(dx)<radius+27&&Math.abs(dy)<111)this.hurtBoss(power,this.boss.x-this.face*30,this.boss.y-7);
@@ -356,20 +459,26 @@
       this.boss.setTexture('sovereign_alert');$audio(245,.095,'triangle');
     }
     launchBoss(){
-      this.marker.clear();this.boss.setTexture('sovereign');
+      this.marker.clear();this.boss.setTexture('sovereign_idle');
       this.bossState='air';this.bossBorn=this.clock;
       const jump=this.bossMove==='high'?-705:this.bossMove==='short'?-370:-510;
       const pace=this.bossMove==='high'?1.05:this.bossMove==='short'?.65:.90;
-      const dx=this.player.x-this.boss.x;
-      this.boss.setVelocityY(jump).setVelocityX(Phaser.Math.Clamp(dx*pace,-340-this.bossPhase*22,340+this.bossPhase*22));
+      const dx=this.player.x+this.player.body.velocity.x*.17-this.boss.x;
+      const vx=Phaser.Math.Clamp(dx*pace,-350-this.bossPhase*20,350+this.bossPhase*20);
+      this.boss.setVelocityY(jump).setVelocityX(vx);
+      const flight=2*Math.abs(jump)/1340;
+      this.impactX=Phaser.Math.Clamp(this.boss.x+vx*flight,76,W-76);
+      this.marker.clear();
+      rect(this.marker,0xd65d67,this.impactX-69,GROUND-5,138,5,.6);
+      rect(this.marker,0xffe5a7,this.impactX-42,GROUND-7,84,3,.95);
       $audio(310,.12,'triangle');this.confetti(this.boss.x,GROUND-8,0x9ad6ed,13,42);
     }
     bossLanded(){
-      this.bossState='rest';const haste=Math.min(390,this.bossPhase*110);
-      this.nextBoss=this.clock+650-haste+(this.bossMove==='high'?250:0);
-      this.boss.setVelocityX(0);this.boss.setTexture('sovereign');
+      this.marker.clear();this.bossState='rest';const haste=Math.min(390,this.bossPhase*110);
+      this.nextBoss=this.clock+980-haste+(this.bossMove==='high'?150:0);
+      this.boss.setVelocityX(0);this.boss.setTexture('sovereign_land');
       this.confetti(this.boss.x,GROUND-12,0xaddcee,18,68);this.cameras.main.shake(90,.003);$audio(165,.12,'triangle');
-      if(this.bossMove==='high'){
+      if(this.bossMove==='high'||(this.bossPhase>=2&&this.bossJump%4===0)){
         this.bossWarn('JUMP THE GROUND WAVES!',860);
         this.wave(-1);this.wave(1);
       }
@@ -380,7 +489,8 @@
       this.bossState='teleport';this.bossBorn=this.clock;
       this.teleportX=Phaser.Math.Clamp(this.player.x+(this.player.x<W/2?210:-210),90,W-90);
       this.boss.setVelocity(0,0).setAllowGravity(false);
-      this.marker.clear();rect(this.marker,0xe3a6ee,this.teleportX-56,GROUND-7,112,7,.72);
+      this.marker.clear();rect(this.marker,0x7b468e,this.teleportX-69,GROUND-8,138,8,.52);
+      rect(this.marker,0xffc9ee,this.teleportX-53,GROUND-8,106,4,.94);
       this.bossWarn('WATCH THE PURPLE MARK!',950);
       this.tweens.add({targets:this.boss,alpha:0,duration:490});$audio(285,.22,'sine');
     }
@@ -391,36 +501,55 @@
       this.confetti(this.boss.x,this.boss.y,0xcdb1ff,23,78);this.cameras.main.shake(80,.002);
     }
     updateHero(now,dt){
-      const grounded=!!(this.player.body.blocked.down||this.player.body.touching.down);
-      if(grounded)this.lastGround=now;
+      const body=this.player.body;
+      const grounded=!!(body.blocked.down||body.touching.down);
+      if(grounded){this.lastGround=now;this.airJumps=1;}
       const axis=Number(down.right||this.keys.D.isDown||this.keys.RIGHT.isDown)-Number(down.left||this.keys.A.isDown||this.keys.LEFT.isDown);
-      const v=this.player.body.velocity.x,target=axis*355;
-      this.player.setVelocityX(Phaser.Math.Linear(v,target,Math.min(1,dt/1000*(axis?16:25))));
-      if(axis){this.face=axis;this.player.setFlipX(axis<0);}
+      const v=body.velocity.x,target=axis*355;
+      if(axis&&now>this.dashUntil){this.face=axis;this.player.setFlipX(axis<0);}
+      const dashing=now<this.dashUntil;
+      if(!dashing)this.player.setVelocityX(Phaser.Math.Linear(v,target,Math.min(1,dt/1000*(axis?20:30))));
+      else {this.player.setVelocityX(this.face*690);this.afterimage();}
+      if(pulse.dash||Phaser.Input.Keyboard.JustDown(this.keys.SHIFT))this.beginDash(now);
+      pulse.dash=false;
       const jumping=down.jump||this.keys.SPACE.isDown||this.keys.W.isDown||this.keys.UP.isDown;
       if(pulse.jump||(jumping&&!this.wasJump))this.lastPressed=now;
       pulse.jump=false;
-      if(now-this.lastPressed<160&&now-this.lastGround<145){
-        this.player.setVelocityY(-575);this.lastPressed=-9999;this.lastGround=-9999;
-        this.confetti(this.player.x,GROUND-3,0xe8eed3,6,20);$audio(390,.07,'triangle');
+      if(now-this.lastPressed<165){
+        if(now-this.lastGround<140){
+          this.player.setVelocityY(-580);this.airJumps=1;this.lastPressed=-99999;this.lastGround=-99999;
+          this.confetti(this.player.x,this.player.y+19,0xe8eed3,9,27);$audio(390,.07,'triangle');
+        }else if(this.airJumps>0&&this.clock-this.lastGround>150){
+          this.airJumps--;this.lastPressed=-99999;this.player.setVelocityY(-515);
+          this.confetti(this.player.x,this.player.y+13,0xe8fffa,16,36);this.afterimage();
+          this.toastNow('CLOUD JUMP',380);$audio(640,.13,'sine');
+        }
       }
-      if(!jumping&&this.player.body.velocity.y<-150)this.player.setVelocityY(this.player.body.velocity.y*.86);
+      if(!jumping&&body.velocity.y<-170&&!dashing)this.player.setVelocityY(body.velocity.y*.85);
       this.wasJump=jumping;
       let tex='runner0';
-      if(!grounded)tex='runner3';else if(Math.abs(v)>70)tex='runner'+(1+Math.floor(now/110)%2);
+      if(!grounded)tex='runner3';else if(Math.abs(v)>60)tex='runner'+(1+Math.floor(now/100)%2);
+      if(now<this.attackPoseUntil)tex='runner4';
       if(this.player.texture.key!==tex)this.player.setTexture(tex);
-      if(grounded&&Math.abs(v)>110&&now-this.lastDusted>130){this.lastDusted=now;this.confetti(this.player.x,GROUND-1,0xc1d9af,2,10);}
-      if(now<this.hitUntil){this.player.alpha=Math.floor(now/95)%2?.35:1;}
-      else {this.player.alpha=1;this.player.clearTint();}
-      this.playerShade.x=this.player.x;this.playerShade.scaleX=Phaser.Math.Clamp(1-(GROUND-this.player.body.bottom)/200,.4,1);
+      // Impact footsteps and launch dust follow the actual platform rather than the ground.
+      if(grounded&&Math.abs(v)>120&&now-this.lastStep>165){
+        this.lastStep=now;this.confetti(this.player.x,this.player.body.bottom,0xd3e6b3,3,17);
+        $audio(160+(Math.floor(now/165)%2)*25,.024,'triangle',.007);
+      }
+      if(now<this.hitUntil&&now>this.dashUntil){this.player.alpha=Math.floor(now/95)%2?.45:1;}
+      else{this.player.alpha=1;this.player.clearTint();}
+      this.playerShade.x=this.player.x;
+      this.playerShade.scaleX=Phaser.Math.Clamp(1-(GROUND-this.player.body.bottom)/200,.4,1);
     }
     animateBoss(now){
       const base=1-Math.min(.34,(1-this.bossHP/this.bossMax)*.34);
       const wiggle=Math.sin(now/190)*.017;
-      if(this.bossState==='crouch'){this.boss.setScale(base*1.13,base*.85);}
-      else if(this.bossState==='air'){this.boss.setScale(base*.92,base*1.08);}
+      if(this.bossState==='crouch'){this.boss.setScale(base*1.15,base*.82);}
+      else if(this.bossState==='air'){this.boss.setScale(base*.87,base*1.12);}
       else if(this.bossState==='teleport'){this.boss.setScale(base*.9,base*1.07);}
       else this.boss.setScale(base*(1+wiggle),base*(1-wiggle));
+      const key=this.bossState==='crouch'?'sovereign_alert':this.bossState==='air'?'sovereign_air':this.bossState==='rest'?'sovereign_land':'sovereign_idle';
+      if(this.boss.texture.key!==key)this.boss.setTexture(key);
       this.bossShade.x=this.boss.x;this.bossShade.scaleX=Math.max(.37,1-(GROUND-this.boss.body.bottom)/250);
     }
     update(_time,dt){
@@ -458,5 +587,5 @@
     physics:{default:'arcade',arcade:{gravity:{y:1340},debug:false}},render:{roundPixels:true},
     scene:[VerdantCourt]
   });
-  window.slimefall={version:'0.3.0',game};
+  window.slimefall={version:'0.4.0',game};
 })();
