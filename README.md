@@ -1,4 +1,4 @@
-# Slimefall — The Verdant Crown (v0.3)
+# Slimefall — The Verdant Crown (v0.4)
 
 A free original mobile-first side-view pixel-art boss battle made with Phaser 3.86. Not affiliated with Re-Logic or Terraria. No assets, music, UI artwork, or source code are copied from Terraria.
 
@@ -9,7 +9,7 @@ Open the static GitHub Pages website on your phone and rotate to landscape for t
 ## What's new
 
 - Rebuilt daytime forest with sky, clouds, mountains, layered trees, flowers, pixel-tile soil, and three jumpable one-way wooden bridges.
-- Redrawn original small four-frame character, big blue slime boss, baby slime enemies, and combat particles.
+- Redrawn original small six-frame character, big blue slime boss, baby slime enemies, and combat particles.
 - Boss jump rhythm: normal, normal, short, high. Speeds up and shrinks as HP drops, triggers clearly marked teleport moves, splits to spawn mini-slimes at HP thresholds, and creates ground waves after high jumps.
 - More responsive variable jump and buffered/coyote jump; melee combo and auto-aim magic, mana resource, breakable minions that can drop hearts, better feedback, pause/win/lose/retry.
 - Mobile-first touch controls, sound toggle, landscape support and versioned static assets to avoid older caches.
@@ -21,3 +21,12 @@ Open the static GitHub Pages website on your phone and rotate to landscape for t
 ## QA and follow-up
 
 `node --check src/game.js` verifies parsing; actual testing needs browser/device play. Prioritize mobile Safari control tests, balancing jumping onto platforms, boss hit detection, victory and replay before adding more bosses.
+
+## v0.4 feel pass
+- New original multi-frame pixel silhouettes for the player and jelly boss.
+- Double jump (tap jump twice) and short dash (new touch button / Shift on desktop), with recovery.
+- More responsive locomotion and visible dash/footstep trails.
+- Faster three-hit combo and a pixel-stepped slash, revised phase-based boss attack pacing.
+- Richer original tree canopies, foreground greenery and more organic slime animation frames.
+- Remains zero-cost static hosting with no paid or third-party game art.
+- Gameplay must be tested on an actual phone; JS syntax passes but that cannot establish playability.
